@@ -92,3 +92,53 @@ Entregables:
     - 4 - Visualización del valor predicho.
     Criterio de cierre:
     - 5 - El sistema predice y muestra resultado con métricas básicas.
+
+
+
+
+
+
+______________________________________________________________________________
+______________________________________________________________________________
+
+# Proceso
+
+## Sprint 0 - Preparación y base (completado)
+
+### Qué se hizo
+1. Se instaló Python 3.12.10.
+2. Se creó la estructura inicial del proyecto:
+   - backend/
+   - backend/app/
+   - backend/tests/
+   - frontend/
+   - data/
+   - docs/
+   - scripts/
+3. Se creó entorno virtual `.venv` y se activó.
+4. Se instalaron dependencias base:
+   - fastapi
+   - uvicorn
+   - pandas
+   - openpyxl
+   - python-multipart
+   - scikit-learn
+   - pytest
+5. Se generó `backend/requirements.txt` con `pip freeze`.
+6. Se implementó API mínima en `backend/app/main.py` con endpoint `/health`.
+7. Se validó ejecución local con Uvicorn.
+8. Se inicializó Git y se subió el repositorio a GitHub.
+
+### Resultado técnico
+1. El proyecto corre localmente.
+2. La estructura está clara para continuar con Sprint 1.
+3. El repositorio ya tiene control de versiones y remoto en GitHub.
+
+### Problema encontrado y solución
+1. Error de sintaxis en `return` dentro de `main.py`.
+2. Causa: faltaba indentación dentro de la función.
+3. Solución: aplicar 4 espacios antes de `return`.
+
+### Evidencia de funcionamiento
+1. `GET /health` responde: `{"status":"ok"}`
+2. Swagger disponible en `/docs`.
