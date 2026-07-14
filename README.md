@@ -142,3 +142,22 @@ ______________________________________________________________________________
 ### Evidencia de funcionamiento
 1. `GET /health` responde: `{"status":"ok"}`
 2. Swagger disponible en `/docs`.
+
+_________________________________________________________
+
+## Sprint 1 - Ingesta de datos
+
+### Qué se hizo
+1. Se construyo:
+    - Endpoint de subida de archivos CSV/Excel.
+    - Validación de formato y archivo vacío.
+    - Lectura con pandas.
+    - Resumen inicial del dataset:
+        ○ nombre de archivo
+        ○ filas
+        ○ columnas
+        ○ nombres de columnas
+    - Tests mínimos para salud y validación de extensión.
+
+• Diseñado y listo para ejecutar; el siguiente paso es codificar el endpoint de upload en main.py:1 y correr pruebas.
+
