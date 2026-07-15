@@ -1,8 +1,31 @@
 from io import BytesIO
 import pandas as pd
+import re
+import unicodedata
 from fastapi import FastAPI, UploadFile, File, HTTPException
 
 app = FastAPI(title="Dashboard Inteligente API", version="0.1.0")
+
+def normalize_columns(columns):
+    normalized = []
+    for col in columns:
+        name = str(col).strip().lower()
+        name = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode("ascii")
+        name = re.sub(r"\s+", "", name)
+        name = re.sub(r"[^a-z0-9]", "", name)
+        name = re.sub(r"\+", "", name).strip("_")
+        normalized.append(name)
+    return normalized
+
+
+def infer_column_type(series):
+    if pd.api.types.is_numeric_dtype(series):
+        return "numeric"
+    if pd.api.types.is_datetime64_any_dtype(series):
+        return "datetime"
+    if pd.api.types.is_bool_dtype(series):
+        return "boolean"
+    return "text"
 
 @app.get("/health")
 def health():
@@ -31,9 +54,48 @@ async def upload_file(file: UploadFile = File(...)):
     if df.empty:
         raise HTTPException(status_code=400, detail="El archivo no contiene registros.")
     
+    original_columns = df.columns.tolist()
+    df.columns = normalize_columns(df.columns)
+
+    if any(col == "" or col == "nan" for col in df.columns):
+        raise HTTPException(status_code=400, detail="Hay columnas con nombre vacio o invalido.")
+
+    duplicated_cols = df.columns[df.columns.duplicated()].tolist()
+    if duplicated_cols:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Hay columnas duplicadas despues de normalizar: {duplicated_cols}",
+        )
+
+    non_empty_rows = int(df.dropna(how="all").shape[0])
+    if non_empty_rows == 0:
+        raise HTTPException(status_code=400, detail="El archivo no tiene filas con datos utiles.")
+
+    numeric_columns = df.select_dtypes(include="number").columns.tolist()
+    if not numeric_columns:
+        raise HTTPException(
+            status_code=400,
+            detail="Se requiere al menos una columna numerica para analisis.",
+        )
+
+    column_types = {col: infer_column_type(df[col]) for col in df.columns}
+    nulls_by_column = {col: int(df[col].isna().sum()) for col in df.columns}
+
+    warnings = []
+    duplicate_rows = int(df.duplicated().sum())
+    if duplicate_rows > 0:
+        warnings.append(f"Se detectaron {duplicate_rows} filas duplicadas.")
+    if any(v > 0 for v in nulls_by_column.values()):
+        warnings.append("El dataset contiene valores nulos.")
+    
     return {
         "filename": filename,
         "rows": int(df.shape[0]),
         "columns": int(df.shape[1]),
         "column_names": df.columns.tolist(),
+        "original_column_names": original_columns,
+        "numeric_columns": numeric_columns,
+        "column_types": column_types,
+        "nulls_by_column": nulls_by_column,
+        "warnings": warnings,
     }

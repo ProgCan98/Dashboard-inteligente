@@ -93,11 +93,6 @@ Entregables:
     Criterio de cierre:
     - 5 - El sistema predice y muestra resultado con métricas básicas.
 
-
-
-
-
-
 ______________________________________________________________________________
 ______________________________________________________________________________
 
@@ -143,9 +138,9 @@ ______________________________________________________________________________
 1. `GET /health` responde: `{"status":"ok"}`
 2. Swagger disponible en `/docs`.
 
-_________________________________________________________
+__________________________________________________________________________________________
 
-## Sprint 1 - Ingesta de datos
+## Sprint 1 - Ingesta de datos (completado)
 
 ### Qué se hizo
 1. Se construyo:
@@ -153,11 +148,48 @@ _________________________________________________________
     - Validación de formato y archivo vacío.
     - Lectura con pandas.
     - Resumen inicial del dataset:
-        ○ nombre de archivo
-        ○ filas
-        ○ columnas
-        ○ nombres de columnas
+        • nombre de archivo
+        • filas
+        • columnas
+        • nombres de columnas
     - Tests mínimos para salud y validación de extensión.
 
-• Diseñado y listo para ejecutar; el siguiente paso es codificar el endpoint de upload en main.py:1 y correr pruebas.
+### Evidencia de validación manual
 
+1. Se probó carga de archivo Excel real con 2 columnas y 5 registros.
+2. El endpoint de upload respondió código 200.
+3. La API devolvió correctamente:
+    • nombre de archivo
+    • cantidad de filas y columnas
+    • nombres de columnas normalizados
+    • columnas numéricas detectadas
+    • tipos de columnas
+    • nulos por columna
+    • lista de warnings vacía
+
+### Resultado
+
+1. La ingesta CSV/Excel funciona correctamente.
+2. La validación de formato y contenido está operativa.
+3. El sistema ya está listo para iniciar Sprint 2 (análisis descriptivo).
+
+### Mejora detectada
+
+1. Unificar el formato de nombres en nulls_by_column para que coincida siempre con column_names normalizadas.
+
+### Cierre final
+
+1. Se verificó la normalización consistente de columnas en toda la respuesta del endpoint.
+2. Se validó carga de archivo Excel real con respuesta 200.
+3. Se confirmó detección correcta de columnas numéricas y tipos.
+4. Resultado: Sprint 1 completado y listo para iniciar Sprint 2.
+
+__________________________________________________________________________________________
+
+## Sprint 2: Análisis descriptivo (En curso)
+
+### Qué se hizo
+1. Cree las hojas de excel para realizar las pruebas
+    • Cree excel con datos correctos
+    • Cree excel con datos incorrectos
+2. 
