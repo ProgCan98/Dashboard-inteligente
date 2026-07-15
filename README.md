@@ -1,6 +1,3 @@
-## Aqui hare las anotaciones sobre este proyecto y todo lo aprendido para lograr a alcanzar mi meta de adquirir conocimiento de redes neuronales.
-
-
 # Roadmap del proyecto
 ## 1. Vision del proyecto
 
