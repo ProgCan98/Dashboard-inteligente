@@ -99,3 +99,108 @@ async def upload_file(file: UploadFile = File(...)):
         "nulls_by_column": nulls_by_column,
         "warnings": warnings,
     }
+
+def to_python_number(value):
+    if pd.isna(value):
+        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+    return float(value)
+
+def build_descriptive_stats(df):
+    numeric_df = df.select_dtypes(include="number")
+    if numeric_df.empty:
+        raise HTTPException(
+            status_code=400,
+            detail="No hay columnas numericas para calcular estadisticas."
+        )
+
+    totals = {}
+    means = {}
+    mins = {}
+    maxs = {}
+
+    for col in numeric_df.columns:
+        totals[col] = to_python_number(numeric_df[col].sum())
+        means[col] = to_python_number(numeric_df[col].mean())
+        mins[col] = to_python_number(numeric_df[col].min())
+        maxs[col] = to_python_number(numeric_df[col].max())
+
+    nulls_by_column = {col: int(df[col].isna().sum()) for col in df.columns}
+    total_rows = int(df.shape[0])
+
+    null_percentage_by_column = {}
+    columns_with_nulls = []
+    for col, null_count in nulls_by_column.items():
+        pct = round((null_count / total_rows) * 100, 2) if total_rows > 0 else 0.0
+        null_percentage_by_column[col] = pct
+        if null_count > 0:
+            columns_with_nulls.append(col)
+
+    null_rows_count = int(df.isna().any(axis=1).sum())
+
+    duplicate_mask = df.duplicated(keep=False)
+    duplicate_rows_count = int(duplicate_mask.sum())
+    duplicate_groups_count = int(df.duplicated().sum())
+
+    return {
+        "rows": int(df.shape[0]),
+        "columns": int(df.shape[1]),
+        "numeric_columns": numeric_df.columns.tolist(),
+        "stats": {
+            "total": totals,
+            "promedio": means,
+            "minimo": mins,
+            "maximo": maxs,
+        },
+        "quality": {
+            "nulls_by_column": nulls_by_column,
+            "null_percentage_by_column": null_percentage_by_column,
+            "columns_with_nulls": columns_with_nulls,
+            "null_rows_count": null_rows_count,
+            "duplicate_rows_count": duplicate_rows_count,
+            "duplicate_groups_count": duplicate_groups_count,
+        },
+    }
+
+@app.post("/analyze")
+async def analyze_file(file: UploadFile = File(...)):
+    filename = file.filename or ""
+    ext = filename.lower().split(".")[-1] if "." in filename else ""
+
+    if ext not in {"csv", "xlsx", "xls"}:
+        raise HTTPException(status_code=400, detail="Formato no permitido. Usa CSV o Excel.")
+
+    content = await file.read()
+    if not content:
+        raise HTTPException(status_code=400, detail="Archivo vacio.")
+
+    try:
+        if ext == "csv":
+            df = pd.read_csv(BytesIO(content))
+        else:
+            df = pd.read_excel(BytesIO(content))
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"No se pudo leer el archivo: {str(e)}")
+
+    if df.empty:
+        raise HTTPException(status_code=400, detail="El archivo no contiene registros.")
+
+    df.columns = normalize_columns(df.columns)
+
+    if any(col == "" or col == "nan" for col in df.columns):
+        raise HTTPException(status_code=400, detail="Hay columnas con nombre vacio o invalido.")
+
+    duplicated_cols = df.columns[df.columns.duplicated()].tolist()
+    if duplicated_cols:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Hay columnas duplicadas despues de normalizar: {duplicated_cols}",
+        )
+
+    analysis = build_descriptive_stats(df)
+
+    return {
+        "filename": filename,
+        "analysis": analysis,
+    }

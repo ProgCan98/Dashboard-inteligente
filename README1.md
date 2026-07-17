@@ -1,3 +1,11 @@
+### Levantar api
+uvicorn app.main:app --reload --app-dir backend
+
+### Luego valida:
+http://127.0.0.1:8000/health
+
+http://127.0.0.1:8000/docs
+
 # Roadmap del proyecto
 ## 1. Vision del proyecto
 
@@ -186,7 +194,36 @@ ________________________________________________________________________________
 ## Sprint 2: Análisis descriptivo (En curso)
 
 ### Qué se hizo
-1. Cree las hojas de excel para realizar las pruebas
-    • Cree excel con datos correctos
-    • Cree excel con datos incorrectos
-2. 
+1. Se prepararon los datasets de prueba para este sprint:
+    • Archivo con datos correctos (limpio)
+    • Archivo con datos incorrectos (con errores controlados)
+2. Se implementó y probó el análisis descriptivo en la API para obtener:
+    • Total
+    • Promedio
+    • Mínimo
+    • Máximo
+3. Se validó la detección de calidad de datos:
+    • Nulos por columna
+    • Filas duplicadas
+
+### Evidencia de validación manual
+1. Con el archivo limpio:
+    • Se detectaron correctamente columnas numéricas esperadas.
+    • No se reportaron nulos.
+    • No se reportaron duplicados.
+    • Las estadísticas (total, promedio, mínimo, máximo) fueron coherentes.
+2. Con el archivo con errores:
+    • Se detectaron nulos en múltiples columnas.
+    • Se detectó al menos 1 fila duplicada.
+    • Se observaron valores negativos e inconsistencias en columnas derivadas.
+    • Algunas columnas no fueron tomadas como numéricas por contener texto en filas específicas.
+
+### Resultado parcial
+1. El endpoint de análisis descriptivo está funcionando correctamente.
+2. La detección de nulos y duplicados está operativa.
+3. Ya existe base sólida para continuar con insights automáticos en el siguiente avance del Sprint 2.
+
+### Pendiente para continuar Sprint 2
+1. Agregar insights básicos automáticos sobre el dataset.
+2. Mejorar validación de columnas que deberían ser numéricas cuando contienen texto.
+3. Completar pruebas finales y cerrar sprint.
