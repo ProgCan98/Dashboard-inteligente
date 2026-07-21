@@ -107,6 +107,32 @@ def to_python_number(value):
         return float(value)
     return float(value)
 
+def build_basic_insights(df, numeric_df, nulls_by_column, duplicate_rows_count):
+    insights = []
+
+    if not numeric_df.empty:
+        mean_values = numeric_df.mean(numeric_only=True)
+        if not mean_values.empty:
+            top_col = mean_values.idxmax()
+            top_val = float(mean_values.max())
+            insights.append(
+                f"La columna con mayor promedio es '{top_col}' con valor {top_val:.2f}."
+            )
+
+    columns_with_nulls = [col for col, count in nulls_by_column.items() if count > 0]
+    if columns_with_nulls:
+        insights.append(
+            "Se detectaron valores nulos en: " + ", ".join(columns_with_nulls) + "."
+        )
+
+    if duplicate_rows_count > 0:
+        insights.append(f"Se detectaron {duplicate_rows_count} filas duplicadas.")
+
+    if not insights:
+        insights.append("Dataset sin alertas de calidad basica.")
+
+    return insights
+
 def build_descriptive_stats(df):
     numeric_df = df.select_dtypes(include="number")
     if numeric_df.empty:
@@ -142,6 +168,18 @@ def build_descriptive_stats(df):
     duplicate_mask = df.duplicated(keep=False)
     duplicate_rows_count = int(duplicate_mask.sum())
     duplicate_groups_count = int(df.duplicated().sum())
+    
+    insights = build_basic_insights(df, numeric_df, nulls_by_column, duplicate_rows_count)
+    
+    expected_numeric_columns = ["unidades", "preciounitario", "costounitario", "ventastotales", "costototal", "margen"]
+    invalid_numeric_values = {}
+
+    for col in expected_numeric_columns:
+        if col in df.columns:
+            coerced = pd.to_numeric(df[col], errors="coerce")
+            invalid_count = int(coerced.isna().sum() - df[col].isna().sum())
+            if invalid_count > 0:
+                invalid_numeric_values[col] = invalid_count
 
     return {
         "rows": int(df.shape[0]),
@@ -160,7 +198,9 @@ def build_descriptive_stats(df):
             "null_rows_count": null_rows_count,
             "duplicate_rows_count": duplicate_rows_count,
             "duplicate_groups_count": duplicate_groups_count,
+            "invalid_numeric_values": invalid_numeric_values
         },
+        "insights": insights,
     }
 
 @app.post("/analyze")

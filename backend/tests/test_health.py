@@ -56,3 +56,27 @@ def test_analyze_without_numeric_columns():
     response = client.post("/analyze", files=files)
     assert response.status_code == 400
     assert "columnas numericas" in response.json()["detail"].lower()
+    
+def test_analyze_includes_insights():
+    csv_data = b"mes,ventas,costo\nero,100,60\nfebrero,200,120\n"
+    files = {"file": ("ok.csv", csv_data, "text/csv")}
+    response = client.post("/analyze", files=files)
+    assert response.status_code == 200
+    payload = response.json()
+    assert "insights" in payload["analysis"]
+    assert isinstance(payload["analysis"]["insights"], list)
+    assert len(payload["analysis"]["insights"]) > 0
+    
+def test_analyze_detects_invalid_numeric_values():
+    csv_data = (
+    b"mes,unidades,preciounitario,costounitario,ventastotales,costototal,margen\n"
+    b"enero,cien,25,14,3000,1680,1320\n"
+    b"febrero,100,30,18,3000,1800,1200\n"
+    )
+    files = {"file": ("invalid_numeric.csv", csv_data, "text/csv")}
+    response = client.post("/analyze", files=files)
+    assert response.status_code == 200
+    payload = response.json()
+    invalids = payload["analysis"]["quality"]["invalid_numeric_values"]
+    assert "unidades" in invalids
+    assert invalids["unidades"] > 0

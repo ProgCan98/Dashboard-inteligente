@@ -206,6 +206,20 @@ ________________________________________________________________________________
     • Nulos por columna
     • Filas duplicadas
 
+4. Se agregaron insights básicos automáticos al análisis descriptivo.
+5. Se incorporó validación de columnas esperadas numéricas con detección de valores inválidos (invalid_numeric_values).
+3. Se mejoró el reporte de calidad con métricas más completas:
+    • porcentaje de nulos por columna
+    • columnas con nulos
+    • filas con nulos
+    • filas duplicadas y grupos duplicados
+4. Se ampliaron los tests automáticos para validar:
+    • que el análisis incluya insights
+    • que se detecten valores no numéricos en columnas numéricas esperadas
+5. Se ejecutaron pruebas en pytest y validación manual en Swagger con:
+    • archivo limpio
+    • archivo con errores
+
 ### Evidencia de validación manual
 1. Con el archivo limpio:
     • Se detectaron correctamente columnas numéricas esperadas.
@@ -218,12 +232,13 @@ ________________________________________________________________________________
     • Se observaron valores negativos e inconsistencias en columnas derivadas.
     • Algunas columnas no fueron tomadas como numéricas por contener texto en filas específicas.
 
-### Resultado parcial
-1. El endpoint de análisis descriptivo está funcionando correctamente.
-2. La detección de nulos y duplicados está operativa.
-3. Ya existe base sólida para continuar con insights automáticos en el siguiente avance del Sprint 2.
+### Resultado final Sprint 2
+1. El endpoint de análisis descriptivo quedó completo y validado.
+2. El sistema ya entrega estadísticas + calidad + insights listos para visualización.
+3. Sprint 2 queda cerrado y listo para iniciar Sprint 3.
 
-### Pendiente para continuar Sprint 2
-1. Agregar insights básicos automáticos sobre el dataset.
-2. Mejorar validación de columnas que deberían ser numéricas cuando contienen texto.
-3. Completar pruebas finales y cerrar sprint.
+### Pendiente para Sprint 3
+1. Construir vista de KPIs en frontend.
+2. Agregar gráficos principales (evolución y comparativas).
+3. Mostrar tabla de datos y sección de insights en pantalla.
+4. Conectar flujo frontend-backend para carga y visualización end-to-end.
